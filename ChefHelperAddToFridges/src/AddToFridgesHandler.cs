@@ -111,8 +111,11 @@ namespace ChefHelperAddToFridges.AddToFridges
                 {
                     this.hoverText = FridgesAreFree() ? button.hoverText : "Disabled - Fridge(s) in Use";
                     menu.hoveredItem = null;
+                    button.scale = Math.Min (button.scale + 0.02f, button.baseScale + 0.1f);
                     return true;
                 }
+                
+                button.scale = Math.Max (button.scale - 0.02f, button.baseScale);
             }
 
             return false;
