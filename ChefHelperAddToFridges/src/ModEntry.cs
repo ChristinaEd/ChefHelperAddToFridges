@@ -47,7 +47,7 @@ namespace ChefHelperAddToFridges
             helper.Events.Input.CursorMoved += OnCursorMoved;
         }
 
-        internal ItemGrabMenu returnFridgeItemGrabMenu()
+        internal ItemGrabMenu ReturnFridgeItemGrabMenu()
         {
             if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is ItemGrabMenu)
             {
@@ -85,7 +85,7 @@ namespace ChefHelperAddToFridges
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
-            var menu = returnFridgeItemGrabMenu();
+            var menu = ReturnFridgeItemGrabMenu();
             if (menu != null && e.Button == SButton.MouseLeft && handler.FridgesAreFree())
             {
                 handler.HandleClick(e.Cursor);
@@ -99,7 +99,7 @@ namespace ChefHelperAddToFridges
         {
             if (!Context.IsWorldReady) return;
 
-            if (returnFridgeItemGrabMenu() != null)
+            if (ReturnFridgeItemGrabMenu() != null)
             {
                 handler.currentLocation = Game1.player.currentLocation;
                 handler.DrawButton();

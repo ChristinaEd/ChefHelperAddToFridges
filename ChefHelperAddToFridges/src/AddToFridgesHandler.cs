@@ -25,9 +25,10 @@ namespace ChefHelperAddToFridges.AddToFridges
             this.image = image;
             this.imageDisabled = imageDisabled;
             modEntry.Monitor.Log($"Handler created.");
-            button = new ClickableTextureComponent(Rectangle.Empty, null, new Rectangle(0, 0, 16, 16), 4f);
-
-            button.hoverText = "Add To Existing Stacks - All Fridges";
+            button = new ClickableTextureComponent(Rectangle.Empty, null, new Rectangle(0, 0, 16, 16), 4f)
+            {
+                hoverText = "Add To Existing Stacks - All Fridges"
+            };
         }
 
         private void UpdatePos()
@@ -100,7 +101,7 @@ namespace ChefHelperAddToFridges.AddToFridges
         internal bool TryHover(float x, float y)
         {
             this.hoverText = "";
-            var menu = modEntry.returnFridgeItemGrabMenu();
+            var menu = modEntry.ReturnFridgeItemGrabMenu();
 
             if (menu != null)
             {
@@ -127,8 +128,8 @@ namespace ChefHelperAddToFridges.AddToFridges
         /// <param name="chest"></param>
         public void FillOutStacks(Chest chest)
         {
-            var menu = modEntry.returnFridgeItemGrabMenu();
-            var inventory = modEntry.returnFridgeItemGrabMenu().inventory;
+            var menu = modEntry.ReturnFridgeItemGrabMenu();
+            var inventory = modEntry.ReturnFridgeItemGrabMenu().inventory;
 
             for (int i = 0; i < chest.items.Count; i++)
             {

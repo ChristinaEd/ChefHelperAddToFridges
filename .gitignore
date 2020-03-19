@@ -29,3 +29,6 @@ _ReSharper*/
 
 # GIF
 *.gif
+
+# PNG
+thumbnail.png
