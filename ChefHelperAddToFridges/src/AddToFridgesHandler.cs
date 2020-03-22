@@ -15,7 +15,7 @@ namespace ChefHelperAddToFridges.AddToFridges
         private ModEntry modEntry;
         private ClickableTextureComponent button;
         private string hoverText;
-        internal StardewValley.GameLocation currentLocation;
+        internal GameLocation currentLocation;
         private Texture2D image;
         private Texture2D imageDisabled;
 
@@ -111,7 +111,6 @@ namespace ChefHelperAddToFridges.AddToFridges
                 if (button.containsPoint((int)x, (int)y))
                 {
                     this.hoverText = FridgesAreFree() ? button.hoverText : "Disabled - Fridge(s) in Use";
-                    menu.hoveredItem = null;
                     return true;
                 }
             }
@@ -128,7 +127,10 @@ namespace ChefHelperAddToFridges.AddToFridges
         /// <param name="chest"></param>
         public void FillOutStacks(Chest chest)
         {
-            var menu = modEntry.ReturnFridgeItemGrabMenu();
+            // FIX THIS! --------------------------------------------------------------------------------------------------------------------------------------------------------------
+            ItemGrabMenu menu = null;
+            if (modEntry.ReturnFridgeItemGrabMenu() is ItemGrabMenu)
+                menu = modEntry.ReturnFridgeItemGrabMenu() as ItemGrabMenu;
             var inventory = modEntry.ReturnFridgeItemGrabMenu().inventory;
 
             for (int i = 0; i < chest.items.Count; i++)
@@ -145,14 +147,19 @@ namespace ChefHelperAddToFridges.AddToFridges
                     {
                         continue;
                     }
-                    TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
-                    var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(menu, "_transferredItemSprites").GetValue();
-                    transferredItemSprites.Add(item_sprite);
+
+                    if (menu != null) { 
+                        TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
+                        var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(menu, "_transferredItemSprites").GetValue();
+                        transferredItemSprites.Add(item_sprite);
+                    }
                     int stack_count2 = inventory_item.Stack;
                     if (chest_item.getRemainingStackSpace() > 0)
                     {
                         stack_count2 = chest_item.addToStack(inventory_item);
-                        menu.ItemsToGrabMenu?.ShakeItem(chest_item);
+
+                        
+                        menu?.ItemsToGrabMenu?.ShakeItem(chest_item);
                     }
                     inventory_item.Stack = stack_count2;
                     while (inventory_item.Stack > 0)
@@ -197,7 +204,7 @@ namespace ChefHelperAddToFridges.AddToFridges
                             break;
                         }
                         stack_count2 = overflow_stack.addToStack(inventory_item);
-                        menu.ItemsToGrabMenu?.ShakeItem(chest_item);
+                        menu?.ItemsToGrabMenu?.ShakeItem(chest_item);
                         inventory_item.Stack = stack_count2;
                     }
                     if (inventory_item.Stack == 0)
@@ -214,7 +221,15 @@ namespace ChefHelperAddToFridges.AddToFridges
             if (currentLocation is StardewValley.Locations.FarmHouse) {
                 var farmHouse = currentLocation as StardewValley.Locations.FarmHouse;
 
-                if (farmHouse.fridge.Value != null)
+                modEntry.Monitor.Log(farmHouse.fridge.Value.ToString());
+                if (farmHouse.fridge.Value.GetType().FullName == "ExpandedFridge.ExpandedFridgeHub")
+                {
+                    List<Chest> hubChests = modEntry.helper.Reflection.GetProperty<List<Chest>>(farmHouse.fridge.Value, "connectedChests").GetValue();
+
+                    foreach (Chest chest in hubChests)
+                        FillOutStacks(chest);
+
+                } else if (farmHouse.fridge.Value != null)
                     FillOutStacks(farmHouse.fridge.Value);
             }
 
