@@ -201,10 +201,9 @@ namespace ChefHelperAddToFridges
         {
             if (!Context.IsWorldReady) return;
             var menu = ReturnFridgeItemGrabMenu();
-            if (menu != null && e.Button == SButton.MouseLeft)
-            {
-                handler.HandleClick(e.Cursor);
-            }
+            if (menu != null)
+                if (e.Button == SButton.MouseLeft || e.Button == SButton.ControllerA || e.Button == SButton.C)
+                    handler.HandleClick(e.Cursor);
         }
 
         /// <summary>When a menu is open (<see cref="Game1.activeClickableMenu"/> isn't null), raised after that menu is drawn to the sprite batch but before it's rendered to the screen.</summary>

@@ -1,7 +1,7 @@
 ﻿{
   "Name": "Chef Helper - Add to Fridges",
   "Author": "Rui3",
-  "Version": "1.1.0",
+  "Version": "1.2.0",
   "Description": "Like add to existing stacks, but with all your fridges!",
   "UniqueID": "Rui3.ChefHelperAddToFridges",
   "EntryDll": "ChefHelperAddToFridges.dll",
