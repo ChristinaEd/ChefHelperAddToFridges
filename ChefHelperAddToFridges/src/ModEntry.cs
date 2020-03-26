@@ -18,7 +18,6 @@ namespace ChefHelperAddToFridges
         internal IModHelper helper;
 
         private bool expandedFridgeLoaded = false;
-        private Assembly expandedFridgeAssembly = null;
 
         private const string EXPANDED_FRIDGE_ID = "Uwazouri.ExpandedFridge";
 
@@ -34,8 +33,8 @@ namespace ChefHelperAddToFridges
             var buttonDisabled = helper.Content.Load<Texture2D>("assets/button_disabled.png");
 
             // Instantiation of Handler and Helper Objects
-            this.handler = new AddToFridgesHandler(this, button, buttonDisabled);
             this.helper = helper;
+            this.handler = new AddToFridgesHandler(this, button, buttonDisabled);
 
             AddEvents(helper);
         }
@@ -45,7 +44,18 @@ namespace ChefHelperAddToFridges
         ** Private methods
         *********/
 
-        /*   Author: GordonBombay#6433 @ Discord
+        /// <summary>Adds Events to the SMAPI helper.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        private void AddEvents(IModHelper helper)
+        {
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
+            helper.Events.Input.ButtonPressed += OnButtonPressed;
+            helper.Events.Input.CursorMoved += OnCursorMoved;
+        }
+
+
+        /*   Author: GordonBombay#6433 @ Discord, tweaked by Rui3 @ NexusMods
         *    Finding the mod's assembly and doing stuff with it consists of multiple steps
         *    1. Find out if the mod is even loaded by SMAPI
         *    2. If it has, then try to get the assembly, given what information SMAPI provides
@@ -130,11 +140,10 @@ namespace ChefHelperAddToFridges
         }
 
 
-
-
-
-
-
+        /// <summary>After all mods are loaded, we check to see if those needing compatibility patches
+        /// are installed.</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             // Compatibility Check
@@ -145,21 +154,10 @@ namespace ChefHelperAddToFridges
         }
 
 
-
-
-
-        /// <summary>Adds Events to the SMAPI helper.</summary>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
-        private void AddEvents(IModHelper helper)
-        {
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
-            helper.Events.Input.ButtonPressed += OnButtonPressed;
-            helper.Events.Input.CursorMoved += OnCursorMoved;
-        }
-
-
-
+        /// <summary>
+        /// Returns the instance of the Item Grab Menu if it's from a fridge.
+        /// </summary>
+        /// <returns></returns>
         internal MenuWithInventory ReturnFridgeItemGrabMenu()
         {
             if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is MenuWithInventory)
@@ -179,33 +177,21 @@ namespace ChefHelperAddToFridges
                 }
             }
 
-            /*if (Game1.activeClickableMenu != null && handler.currentLocation is StardewValley.Locations.FarmHouse)
-            {
-                Monitor.Log($"" + Game1.activeClickableMenu.GetType());
-            }*/
-
             return null;
         }
 
+        /// <summary>
+        /// Checks to see if the cursor is hovering over the button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
             int x = (int)e.NewPosition.ScreenPixels.X;
             int y = (int)e.NewPosition.ScreenPixels.Y;
-            if (handler.TryHover(x, y))
-            {
-                MouseState cur = Game1.oldMouseState;
-                Game1.oldMouseState = new MouseState(
-                    x: x,
-                    y: y,
-                    scrollWheel: cur.ScrollWheelValue,
-                    leftButton: cur.LeftButton,
-                    middleButton: cur.MiddleButton,
-                    rightButton: cur.RightButton,
-                    xButton1: cur.XButton1,
-                    xButton2: cur.XButton2
-                );
-            }
+            
+            handler.TryHover(x, y);
         }
 
         /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
@@ -215,7 +201,7 @@ namespace ChefHelperAddToFridges
         {
             if (!Context.IsWorldReady) return;
             var menu = ReturnFridgeItemGrabMenu();
-            if (menu != null && e.Button == SButton.MouseLeft && handler.FridgesAreFree())
+            if (menu != null && e.Button == SButton.MouseLeft)
             {
                 handler.HandleClick(e.Cursor);
             }
@@ -237,13 +223,6 @@ namespace ChefHelperAddToFridges
             {
                 handler.currentLocation = null;
             }
-
-            /*if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is ItemGrabMenu)
-            {
-                var menu = Game1.activeClickableMenu as ItemGrabMenu;
-                if (menu.behaviorOnItemGrab?.Target is Chest chest && chest.fridge.Value)
-                    handler.DrawButton();
-            }*/
         }
     }
 }

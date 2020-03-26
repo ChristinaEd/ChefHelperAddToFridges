@@ -15,14 +15,12 @@
 
   <ItemGroup>
     <None Remove="assets\button.png" />
-    <None Remove="assets\button.psd" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="assets\button.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\button.psd" />
   </ItemGroup>
 
   <ItemGroup>
