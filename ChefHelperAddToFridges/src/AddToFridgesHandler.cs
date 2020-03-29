@@ -18,6 +18,7 @@ namespace ChefHelperAddToFridges.AddToFridges
         internal GameLocation currentLocation;
         private Texture2D image;
         private Texture2D imageDisabled;
+        private List<TransferredItemSprite> transferredItemSprites;
 
         /// <summary>
         /// Initializes stuff for the mod.
@@ -35,6 +36,8 @@ namespace ChefHelperAddToFridges.AddToFridges
             {
                 hoverText = modEntry.helper.Translation.Get("hoverText.enabled")
             };
+
+            transferredItemSprites = new List<TransferredItemSprite>();
         }
 
         /// <summary>
@@ -123,7 +126,7 @@ namespace ChefHelperAddToFridges.AddToFridges
         internal bool TryHover(float x, float y)
         {
             this.hoverText = "";
-            var menu = modEntry.ReturnFridgeItemGrabMenu();
+            var menu = modEntry.ReturnFridgeMenu();
 
             if (menu != null)
             {
@@ -156,9 +159,9 @@ namespace ChefHelperAddToFridges.AddToFridges
         public void FillOutStacks(Chest chest)
         {
             ItemGrabMenu menu = null;
-            if (modEntry.ReturnFridgeItemGrabMenu() is ItemGrabMenu)
-                menu = modEntry.ReturnFridgeItemGrabMenu() as ItemGrabMenu;
-            var inventory = modEntry.ReturnFridgeItemGrabMenu().inventory;
+            if (modEntry.ReturnFridgeMenu() is ItemGrabMenu)
+                menu = modEntry.ReturnFridgeMenu() as ItemGrabMenu;
+            var inventory = modEntry.ReturnFridgeMenu().inventory;
 
             // Goes through each item in the chest
             for (int i = 0; i < chest.items.Count; i++)
@@ -182,11 +185,18 @@ namespace ChefHelperAddToFridges.AddToFridges
                     // This handles the visual effect of the items in the inventory drifting up and disappearing as they're put in the stack.
                     // This is ItemGrabMenu stuff, and since ExpandedFridgeMenu extends MenuWithInventory (the parent of ItemGrabMenu) it
                     // doesn't have this functionality.
-                    if (menu != null) { 
+                    if (menu != null)
+                    {
                         TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
                         var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(menu, "_transferredItemSprites").GetValue();
                         transferredItemSprites.Add(item_sprite);
+                    } else { 
+                        TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
+                        //modEntry.Monitor.Log($"Added {item_sprite.item.DisplayName}");
+                        transferredItemSprites.Add(item_sprite);
+                        //modEntry.Monitor.Log($"transferredItemSprites.Count = {transferredItemSprites.Count}");
                     }
+
                     int stack_count2 = inventory_item.Stack;
 
                     // Now we add that item to the stack...
@@ -267,6 +277,28 @@ namespace ChefHelperAddToFridges.AddToFridges
                         inventory.actualInventory[j] = null;
                     }
                 }
+            }
+        }
+
+        internal void UpdateTransferredItemSprites()
+        {
+            if (transferredItemSprites.Count > 0)
+                modEntry.Monitor.Log($"transferredItemSprites.Count: {transferredItemSprites.Count}");
+            for (int i = 0; i < transferredItemSprites.Count; i++)
+            {
+                if (transferredItemSprites[i].Update(Game1.currentGameTime))
+                {
+                    transferredItemSprites.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
+        internal void DrawTransferredItems(SpriteBatch spriteBatch)
+        {
+            foreach (TransferredItemSprite transferredItemSprite in transferredItemSprites)
+            {
+                transferredItemSprite.Draw(spriteBatch);
             }
         }
 

@@ -52,6 +52,7 @@ namespace ChefHelperAddToFridges
             helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
             helper.Events.Input.ButtonPressed += OnButtonPressed;
             helper.Events.Input.CursorMoved += OnCursorMoved;
+            helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
         }
 
 
@@ -158,7 +159,7 @@ namespace ChefHelperAddToFridges
         /// Returns the instance of the Item Grab Menu if it's from a fridge.
         /// </summary>
         /// <returns></returns>
-        internal MenuWithInventory ReturnFridgeItemGrabMenu()
+        internal MenuWithInventory ReturnFridgeMenu()
         {
             if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is MenuWithInventory)
             {
@@ -178,6 +179,16 @@ namespace ChefHelperAddToFridges
             }
 
             return null;
+        }
+
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            if (!Context.IsWorldReady) return;
+
+            if (ReturnFridgeMenu() == null) return;
+            
+            if (ReturnFridgeMenu().GetType().FullName == "ExpandedFridge.ExpandedFridgeMenu")
+                handler.UpdateTransferredItemSprites();
         }
 
         /// <summary>
@@ -200,7 +211,7 @@ namespace ChefHelperAddToFridges
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
-            var menu = ReturnFridgeItemGrabMenu();
+            var menu = ReturnFridgeMenu();
             if (menu != null)
                 if (e.Button == SButton.MouseLeft || e.Button == SButton.ControllerA || e.Button == SButton.C)
                     handler.HandleClick(e.Cursor);
@@ -213,10 +224,14 @@ namespace ChefHelperAddToFridges
         {
             if (!Context.IsWorldReady) return;
 
-            if (ReturnFridgeItemGrabMenu() != null)
+            if (ReturnFridgeMenu() != null)
             {
                 handler.currentLocation = Game1.player.currentLocation;
                 handler.DrawButton();
+                
+                if (!(ReturnFridgeMenu() is ItemGrabMenu)) {
+                    handler.DrawTransferredItems(e.SpriteBatch);
+                }
             } 
             else
             {
